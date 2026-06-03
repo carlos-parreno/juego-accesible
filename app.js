@@ -87,57 +87,92 @@ const SoundEngine = {
 
 const TTSManager = {
   synth: window.speechSynthesis,
-  currentUtterance: null,
   isPlaying: false,
   text: "",
-  
-  speak(text) {
+  sentences: [],
+  currentSentenceIndex: 0,
+  currentUtterance: null,
+
+  prepare(text) {
     this.stop();
     this.text = text;
-    this.currentUtterance = new SpeechSynthesisUtterance(text);
-    this.currentUtterance.lang = 'es-ES'; // Español
-    this.currentUtterance.rate = 0.9;     // Un poco más lento para claridad
-    
+    if (text) {
+      this.sentences = text.match(/[^.!?]+[.!?]*/g) || [text];
+      this.sentences = this.sentences.map(s => s.trim()).filter(Boolean);
+    } else {
+      this.sentences = [];
+    }
+    this.currentSentenceIndex = 0;
+    this.updateUI();
+  },
+
+  speakCurrentSentence() {
+    if (this.currentSentenceIndex >= this.sentences.length) {
+      this.isPlaying = false;
+      this.currentSentenceIndex = 0;
+      this.updateUI();
+      return;
+    }
+
+    const sentenceText = this.sentences[this.currentSentenceIndex];
+    this.currentUtterance = new SpeechSynthesisUtterance(sentenceText);
+    this.currentUtterance.lang = 'es-ES';
+    this.currentUtterance.rate = 0.9;
+
     this.currentUtterance.onend = () => {
+      if (this.isPlaying) {
+        this.currentSentenceIndex++;
+        this.speakCurrentSentence();
+      }
+    };
+
+    this.currentUtterance.onerror = (e) => {
+      console.error("TTS error:", e);
       this.isPlaying = false;
       this.updateUI();
     };
-    
+
     this.synth.speak(this.currentUtterance);
-    this.isPlaying = true;
-    this.updateUI();
   },
-  
+
   togglePlayPause() {
-    if (this.synth.speaking) {
-      if (this.synth.paused) {
-        this.synth.resume();
+    if (this.isPlaying) {
+      this.isPlaying = false;
+      this.synth.cancel();
+      this.updateUI();
+    } else {
+      if (this.sentences.length > 0) {
         this.isPlaying = true;
-      } else {
-        this.synth.pause();
-        this.isPlaying = false;
+        this.updateUI();
+        this.speakCurrentSentence();
       }
-    } else if (this.text) {
-      this.speak(this.text);
     }
-    this.updateUI();
   },
-  
+
   replay() {
     this.stop();
-    if (this.text) this.speak(this.text);
+    if (this.sentences.length > 0) {
+      this.isPlaying = true;
+      this.updateUI();
+      this.speakCurrentSentence();
+    }
   },
-  
+
   stop() {
-    this.synth.cancel();
     this.isPlaying = false;
+    this.synth.cancel();
+    this.currentSentenceIndex = 0;
     this.updateUI();
   },
-  
+
   updateUI() {
-    const btnIcon = document.getElementById('icon-tts-play');
-    if (btnIcon) {
-      btnIcon.textContent = this.isPlaying ? '⏸️' : '▶️';
+    const iconHistoria = document.getElementById('icon-tts-play');
+    const iconEntrenador = document.getElementById('icon-tts-play-entrenador');
+    if (iconHistoria) {
+      iconHistoria.textContent = this.isPlaying ? '⏸️' : '▶️';
+    }
+    if (iconEntrenador) {
+      iconEntrenador.textContent = this.isPlaying ? '⏸️' : '▶️';
     }
   }
 };
@@ -246,7 +281,7 @@ const SHOPPING_DATA = {
   listSize: 5,
   gridDistractors: 7,
   presentationTime: 20,
-  waitTime: 15,
+  waitTime: 10,
 };
 
 const GAME_ITEMS = [
@@ -313,17 +348,30 @@ const ModoHistoria = {
   },
 
   showIntro() {
-    let storyText = "Hoy vamos a preparar una cena especial para la familia. Necesito que vayas al supermercado y compres lo siguiente: ";
-    const itemNames = this.currentList.map(i => i.name);
-    storyText += itemNames.slice(0, -1).join(', ') + ' y ' + itemNames[itemNames.length - 1] + '.';
-    storyText += " Tómate el tiempo que necesites para escuchar y leer la lista, y cuando estés seguro, pulsa 'Estoy listo'.";
+    const introText = "Hoy vamos a preparar una cena especial para la familia. Necesito que vayas al supermercado y compres lo siguiente:";
+    const listHTML = `<ul style="margin: var(--space-sm) 0; padding-left: var(--space-lg); text-align: left; list-style-type: disc;">` + 
+      this.currentList.map(item => `<li style="margin-bottom: var(--space-xs);"><strong>${item.emoji} ${item.name}</strong></li>`).join('') + 
+      "</ul>";
+    const outroText = "Tómate el tiempo que necesites para escuchar y leer la lista, y cuando estés seguro, pulsa 'Estoy listo'.";
 
-    document.getElementById('historia-intro-text').textContent = storyText;
+    const storyHTML = `
+      <p style="margin-bottom: var(--space-sm);">${introText}</p>
+      ${listHTML}
+      <p style="margin-top: var(--space-md);">${outroText}</p>
+    `;
+
+    document.getElementById('historia-intro-text').innerHTML = storyHTML;
     ScreenManager.show('screen-historia-intro');
     
     SoundEngine.init(); // Iniciar contexto de audio al interactuar
-    TTSManager.stop();
-    TTSManager.text = storyText;
+    
+    // Generar el texto para la lectura por voz (sin HTML)
+    let storyTTS = "Hoy vamos a preparar una cena especial para la familia. Necesito que vayas al supermercado y compres lo siguiente: ";
+    const itemNames = this.currentList.map(i => i.name);
+    storyTTS += itemNames.slice(0, -1).join(', ') + ' y ' + itemNames[itemNames.length - 1] + '.';
+    storyTTS += " Tómate el tiempo que necesites para escuchar y leer la lista, y cuando estés seguro, pulsa 'Estoy listo'.";
+    
+    TTSManager.prepare(storyTTS);
   },
 
   startMemorization() {
@@ -408,6 +456,16 @@ const ModoHistoria = {
       this.selectedItems = this.selectedItems.filter(n => n !== itemName);
       btn.classList.remove('selected');
     } else {
+      if (this.selectedItems.length >= this.currentList.length) {
+        const firstItemName = this.selectedItems.shift();
+        const gridButtons = document.querySelectorAll('#historia-grid .grid-item');
+        gridButtons.forEach(buttonEl => {
+          const labelEl = buttonEl.querySelector('.item-label');
+          if (labelEl && labelEl.textContent === firstItemName) {
+            buttonEl.classList.remove('selected');
+          }
+        });
+      }
       this.selectedItems.push(itemName);
       btn.classList.add('selected');
     }
@@ -465,6 +523,17 @@ const ModoHistoria = {
     detalleHTML += '</div>';
     detalleEl.innerHTML = detalleHTML;
 
+    const btnSiguiente = document.getElementById('btn-historia-siguiente');
+    if (this.level === 'facil') {
+      btnSiguiente.classList.remove('hidden');
+      btnSiguiente.textContent = '➡️ Siguiente Nivel (Medio)';
+    } else if (this.level === 'medio') {
+      btnSiguiente.classList.remove('hidden');
+      btnSiguiente.textContent = '➡️ Siguiente Nivel (Difícil)';
+    } else {
+      btnSiguiente.classList.add('hidden');
+    }
+
     ScreenManager.show('screen-historia-resultado');
   },
 
@@ -514,6 +583,9 @@ const ModoEntrenador = {
     document.getElementById('instrucciones-titulo').textContent = title;
     document.getElementById('instrucciones-texto-largo').textContent = instructions;
     ScreenManager.show('screen-entrenador-instrucciones');
+
+    // Preparar el reproductor con las instrucciones correspondientes
+    TTSManager.prepare(instructions);
   },
 
   startTimerPhase() {
@@ -847,6 +919,7 @@ const ModoEntrenador = {
 
   cleanup() {
     if (this.timer) this.timer.stop();
+    TTSManager.stop();
   }
 };
 
@@ -893,10 +966,23 @@ document.addEventListener('DOMContentLoaded', () => {
     ModoHistoria.startLevel(ModoHistoria.level);
   });
   
-  document.getElementById('btn-historia-menu').addEventListener('click', () => {
+  document.getElementById('btn-historia-siguiente').addEventListener('click', () => {
     ModoHistoria.cleanup();
-    ScreenManager.show('screen-menu');
+    if (ModoHistoria.level === 'facil') {
+      ModoHistoria.startLevel('medio');
+    } else if (ModoHistoria.level === 'medio') {
+      ModoHistoria.startLevel('dificil');
+    }
   });
+
+  document.getElementById('btn-historia-niveles-back').addEventListener('click', () => {
+    ModoHistoria.cleanup();
+    ScreenManager.show('screen-historia-niveles');
+  });
+
+  // Controles TTS Entrenador
+  document.getElementById('btn-tts-play-pause-entrenador').addEventListener('click', () => TTSManager.togglePlayPause());
+  document.getElementById('btn-tts-replay-entrenador').addEventListener('click', () => TTSManager.replay());
 
   document.getElementById('btn-back-historia-1').addEventListener('click', () => { ModoHistoria.cleanup(); ScreenManager.show('screen-historia-niveles'); });
   document.getElementById('btn-back-historia-3').addEventListener('click', () => { ModoHistoria.cleanup(); ScreenManager.show('screen-menu'); });
@@ -904,7 +990,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // ── Modo Entrenador: Navegación ──
   document.getElementById('btn-back-entrenador').addEventListener('click', () => ScreenManager.show('screen-menu'));
-  document.getElementById('btn-back-entrenador-instrucciones').addEventListener('click', () => ScreenManager.show('screen-entrenador-menu'));
+  document.getElementById('btn-back-entrenador-instrucciones').addEventListener('click', () => {
+    TTSManager.stop();
+    ScreenManager.show('screen-entrenador-menu');
+  });
 
   // Botones de niveles
   document.getElementById('btn-nivel-1').addEventListener('click', () => ModoEntrenador.startLevel(1));
@@ -914,6 +1003,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Botón "¡Estoy listo!"
   document.getElementById('btn-entrenador-listo').addEventListener('click', () => {
+    TTSManager.stop();
     ModoEntrenador.startTimerPhase();
   });
 

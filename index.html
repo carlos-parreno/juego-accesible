@@ -102,7 +102,7 @@
 
       <div class="audio-controls" role="group" aria-label="Controles de audio">
         <button id="btn-tts-play-pause" class="btn btn-secondary btn-icon-only" aria-label="Pausar o reanudar lectura">
-          <span class="icon-tts" id="icon-tts-play">⏸️</span>
+          <span class="icon-tts" id="icon-tts-play">▶️</span>
         </button>
         <button id="btn-tts-replay" class="btn btn-secondary btn-icon-only" aria-label="Volver a escuchar">
           <span class="icon-tts">⏪</span>
@@ -207,8 +207,14 @@
 
       <div class="spacer-sm"></div>
 
-      <button id="btn-historia-menu" class="btn btn-secondary w-full">
-        🏠 Volver al Menú
+      <button id="btn-historia-siguiente" class="btn btn-accent w-full hidden">
+        ➡️ Siguiente Nivel
+      </button>
+
+      <div class="spacer-sm"></div>
+
+      <button id="btn-historia-niveles-back" class="btn btn-secondary w-full">
+        📋 Volver a Niveles
       </button>
     </section>
 
@@ -274,6 +280,17 @@
         <p id="instrucciones-texto-largo" class="story-text" aria-live="polite"></p>
       </div>
 
+      <div class="spacer-sm"></div>
+
+      <div class="audio-controls" role="group" aria-label="Controles de audio">
+        <button id="btn-tts-play-pause-entrenador" class="btn btn-secondary btn-icon-only" aria-label="Pausar o reanudar lectura">
+          <span class="icon-tts" id="icon-tts-play-entrenador">▶️</span>
+        </button>
+        <button id="btn-tts-replay-entrenador" class="btn btn-secondary btn-icon-only" aria-label="Volver a escuchar">
+          <span class="icon-tts">⏪</span>
+        </button>
+      </div>
+
       <div class="spacer-lg"></div>
 
       <button id="btn-entrenador-listo" class="btn btn-primary w-full" aria-label="Estoy listo, empezar a jugar">
@@ -307,15 +324,15 @@
         </div>
       </div>
 
-      <!-- Área de contenido del juego (se llena dinámicamente) -->
-      <div id="juego-area" class="w-full" role="region" aria-label="Área de juego">
-        <!-- Contenido dinámico -->
-      </div>
-
       <!-- Pregunta del juego -->
       <div id="juego-pregunta" class="game-question hidden">
         <span id="juego-pregunta-emoji" class="game-question-emoji" aria-hidden="true"></span>
         <p id="juego-pregunta-text" class="game-question-text"></p>
+      </div>
+
+      <!-- Área de contenido del juego (se llena dinámicamente) -->
+      <div id="juego-area" class="w-full" role="region" aria-label="Área de juego">
+        <!-- Contenido dinámico -->
       </div>
 
       <!-- Área de opciones de respuesta -->
