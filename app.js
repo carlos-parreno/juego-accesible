@@ -322,7 +322,8 @@ const ModoHistoria = {
     ScreenManager.show('screen-historia-intro');
     
     SoundEngine.init(); // Iniciar contexto de audio al interactuar
-    TTSManager.speak(storyText);
+    TTSManager.stop();
+    TTSManager.text = storyText;
   },
 
   startMemorization() {
