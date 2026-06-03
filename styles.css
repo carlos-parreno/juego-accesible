@@ -1032,3 +1032,33 @@ body {
 .icon-tts {
   font-size: var(--font-size-xl);
 }
+
+/* ── Créditos ── */
+.credits-card {
+  background: var(--color-surface-alt);
+  border-radius: var(--border-radius);
+  padding: var(--space-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-top: var(--space-xl);
+  box-shadow: var(--shadow-sm);
+  border: 2px solid var(--color-border);
+}
+
+.credits-icon {
+  font-size: var(--font-size-xl);
+}
+
+.credits-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-muted);
+}
+
+.credits-names {
+  font-size: var(--font-size-sm);
+  color: var(--color-text);
+  font-weight: var(--font-weight-semi);
+  margin-top: 2px;
+}

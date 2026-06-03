@@ -132,13 +132,19 @@ const TTSManager = {
       this.updateUI();
     };
 
-    this.synth.speak(this.currentUtterance);
+    if (this.synth) {
+      this.synth.resume(); // Workaround for Chrome speech freeze
+      this.synth.speak(this.currentUtterance);
+    }
   },
 
   togglePlayPause() {
     if (this.isPlaying) {
       this.isPlaying = false;
-      this.synth.cancel();
+      if (this.synth) {
+        this.synth.resume(); // Workaround for Chrome speech freeze
+        this.synth.cancel();
+      }
       this.updateUI();
     } else {
       if (this.sentences.length > 0) {
@@ -160,7 +166,10 @@ const TTSManager = {
 
   stop() {
     this.isPlaying = false;
-    this.synth.cancel();
+    if (this.synth) {
+      this.synth.resume(); // Workaround for Chrome speech freeze
+      this.synth.cancel();
+    }
     this.currentSentenceIndex = 0;
     this.updateUI();
   },
@@ -329,19 +338,28 @@ const ModoHistoria = {
     this.level = nivel;
     this.currentList = [];
     
-    // Generar lista según dificultad
-    const baseItems = pickRandom(SHOPPING_DATA.items, SHOPPING_DATA.listSize);
+    // Generar lista según dificultad: 3 para medio, 5 para difícil (y 5 para fácil)
+    const listSize = nivel === 'medio' ? 3 : 5;
+    const baseItems = pickRandom(SHOPPING_DATA.items, listSize);
     
     baseItems.forEach(item => {
       let displayName = item.baseName;
+      let selectedVal = "";
       if (nivel === 'medio') {
         const amt = item.units[Math.floor(Math.random() * item.units.length)];
         displayName = `${amt} ${item.baseName}`;
+        selectedVal = amt;
       } else if (nivel === 'dificil') {
         const measure = item.measures[Math.floor(Math.random() * item.measures.length)];
         displayName = `${measure} ${item.baseName}`;
+        selectedVal = measure;
       }
-      this.currentList.push({ name: displayName, emoji: item.emoji });
+      this.currentList.push({ 
+        name: displayName, 
+        emoji: item.emoji, 
+        baseItem: item, 
+        selectedValue: selectedVal 
+      });
     });
 
     this.showIntro();
@@ -419,17 +437,52 @@ const ModoHistoria = {
 
   goToSelection() {
     this.selectedItems = [];
-    const distBase = pickRandom(SHOPPING_DATA.distractors, SHOPPING_DATA.gridDistractors);
     
-    // Adaptar distractores al nivel (simplemente añadirles números aleatorios o dejarlos igual)
+    const wrongQuantityItems = [];
+    if (this.level === 'medio' || this.level === 'dificil') {
+      this.currentList.forEach(item => {
+        let wrongName = "";
+        if (this.level === 'medio') {
+          const correctAmt = item.selectedValue;
+          const otherAmts = item.baseItem.units.filter(u => u !== correctAmt);
+          const wrongAmt = otherAmts.length > 0 ? otherAmts[Math.floor(Math.random() * otherAmts.length)] : (parseInt(correctAmt) + 2).toString();
+          wrongName = `${wrongAmt} ${item.baseItem.baseName}`;
+        } else if (this.level === 'dificil') {
+          const correctMeasure = item.selectedValue;
+          const otherMeasures = item.baseItem.measures.filter(m => m !== correctMeasure);
+          const wrongMeasure = otherMeasures.length > 0 ? otherMeasures[Math.floor(Math.random() * otherMeasures.length)] : `2 libras de ${item.baseItem.baseName}`;
+          wrongName = `${wrongMeasure} ${item.baseItem.baseName}`;
+        }
+        wrongQuantityItems.push({ name: wrongName, emoji: item.emoji });
+      });
+    }
+
+    // Determine how many other product distractors we need to reach 12 items in the grid
+    const currentTotal = this.currentList.length + wrongQuantityItems.length;
+    const neededDistractors = 12 - currentTotal;
+
+    // Pick distractors from other products (products not in this.currentList)
+    const usedBaseNames = this.currentList.map(i => i.baseItem.baseName);
+    const availableDistractors = SHOPPING_DATA.distractors.concat(
+      SHOPPING_DATA.items.filter(i => !usedBaseNames.includes(i.baseName))
+    );
+
+    const distBase = pickRandom(availableDistractors, neededDistractors);
     const distractors = distBase.map(item => {
       let dName = item.baseName;
-      if (this.level === 'medio') dName = `${Math.floor(Math.random() * 5) + 1} ${item.baseName}`;
-      if (this.level === 'dificil') dName = `1 paquete de ${item.baseName}`;
+      if (this.level === 'medio') {
+        const units = item.units || ['1', '2', '3'];
+        const amt = units[Math.floor(Math.random() * units.length)];
+        dName = `${amt} ${item.baseName}`;
+      } else if (this.level === 'dificil') {
+        const measures = item.measures || ['1 paquete de', '2 libras de'];
+        const measure = measures[Math.floor(Math.random() * measures.length)];
+        dName = `${measure} ${item.baseName}`;
+      }
       return { name: dName, emoji: item.emoji };
     });
 
-    this.allGridItems = shuffle([...this.currentList, ...distractors]);
+    this.allGridItems = shuffle([...this.currentList, ...wrongQuantityItems, ...distractors]);
     this.renderGrid();
     ScreenManager.show('screen-historia-seleccion');
     document.getElementById('count-total').textContent = this.currentList.length;
