@@ -367,8 +367,13 @@ const ModoHistoria = {
 
   showIntro() {
     const introText = "Hoy vamos a preparar una cena especial para la familia. Necesito que vayas al supermercado y compres lo siguiente:";
-    const listHTML = `<ul style="margin: var(--space-sm) 0; padding-left: var(--space-lg); text-align: left; list-style-type: disc;">` + 
-      this.currentList.map(item => `<li style="margin-bottom: var(--space-xs);"><strong>${item.emoji} ${item.name}</strong></li>`).join('') + 
+    const listHTML = `<ul style="margin: var(--space-md) 0; padding: 0; list-style: none; text-align: left;">` + 
+      this.currentList.map(item => `
+        <li style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-xs);">
+          <span style="color: var(--color-primary); font-size: 28px; line-height: 1; flex-shrink: 0;">•</span>
+          <span style="font-size: var(--font-size-lg); line-height: 1.4;"><strong>${item.emoji} ${item.name}</strong></span>
+        </li>
+      `).join('') + 
       "</ul>";
     const outroText = "Tómate el tiempo que necesites para escuchar y leer la lista, y cuando estés seguro, pulsa 'Estoy listo'.";
 
