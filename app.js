@@ -251,11 +251,11 @@ const GAME_ITEMS = [
 const LEVEL_CONFIG = {
   1: { // El Escondite
     boxCount: 5,        // Número de cajas
-    memorizeTime: 5,    // Segundos para memorizar
+    memorizeTime: 15,    // Segundos para memorizar
   },
   2: { // El Intruso
     originalCount: 4,   // Imágenes originales
-    memorizeTime: 5,    // Segundos para memorizar
+    memorizeTime: 15,    // Segundos para memorizar
   },
   3: { // El Cine
     sequenceLength: 4,  // Imágenes en la secuencia
@@ -263,7 +263,7 @@ const LEVEL_CONFIG = {
   },
   4: { // Las Parejas Dirigidas
     pairsCount: 3,      // Número de pares (total = pairsCount * 2)
-    memorizeTime: 5,    // Segundos para memorizar
+    memorizeTime: 15,    // Segundos para memorizar
   },
 };
 
