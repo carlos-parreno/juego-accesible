@@ -1,0 +1,993 @@
+/* ============================================================
+   JUEGO DE MEMORIA ACCESIBLE — Hoja de Estilos Principal
+   Diseñado para adultos mayores (+65 años)
+   
+   PERSONALIZACIÓN:
+   - Cambia las variables CSS en :root para ajustar colores
+   - Modifica --font-size-base para tamaño de texto global
+   - Ajusta --btn-min-size para el tamaño mínimo de botones
+   ============================================================ */
+
+/* ── Google Font (Nunito: amigable, redondeada y legible) ── */
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
+
+/* ── Variables de Diseño ── */
+:root {
+  /* Paleta de colores — Alto contraste, cálida y amigable */
+  --color-bg:           #FFF8F0;
+  --color-surface:      #FFFFFF;
+  --color-surface-alt:  #F0EDE8;
+  --color-primary:      #1B6B4A;
+  --color-primary-dark: #145038;
+  --color-primary-light:#E8F5EE;
+  --color-secondary:    #2B6CB0;
+  --color-secondary-light: #EBF4FF;
+  --color-accent:       #D97706;
+  --color-accent-light: #FFF7E6;
+  --color-text:         #1A1A1A;
+  --color-text-muted:   #4A4A4A;
+  --color-success:      #16A34A;
+  --color-success-bg:   #DCFCE7;
+  --color-gentle-error: #EA8B2D;
+  --color-gentle-error-bg: #FFF3E0;
+  --color-correct-highlight: #BBF7D0;
+  --color-wrong-highlight:   #FED7AA;
+  --color-selected:     #3B82F6;
+  --color-selected-bg:  #DBEAFE;
+  --color-border:       #D1D5DB;
+  --color-shadow:       rgba(0, 0, 0, 0.08);
+  --color-overlay:      rgba(0, 0, 0, 0.4);
+
+  /* Tipografía */
+  --font-family:      'Nunito', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-size-base:   20px;
+  --font-size-sm:     18px;
+  --font-size-lg:     24px;
+  --font-size-xl:     30px;
+  --font-size-2xl:    38px;
+  --font-size-3xl:    48px;
+  --font-weight-normal: 400;
+  --font-weight-semi:   600;
+  --font-weight-bold:   700;
+  --font-weight-extra:  800;
+  --line-height:      1.5;
+
+  /* Espaciado */
+  --space-xs:  6px;
+  --space-sm:  12px;
+  --space-md:  20px;
+  --space-lg:  28px;
+  --space-xl:  40px;
+  --space-2xl: 56px;
+
+  /* Botones y Touch Targets */
+  --btn-min-size:   64px;
+  --btn-radius:     16px;
+  --card-radius:    20px;
+  --border-radius:  12px;
+
+  /* Transiciones */
+  --transition-fast:   0.2s ease;
+  --transition-normal: 0.35s ease;
+  --transition-slow:   0.5s ease;
+
+  /* Sombras */
+  --shadow-sm:  0 2px 8px var(--color-shadow);
+  --shadow-md:  0 4px 16px var(--color-shadow);
+  --shadow-lg:  0 8px 32px rgba(0,0,0,0.12);
+}
+
+/* ── Reset y Base ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: var(--font-size-base);
+  -webkit-text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--font-family);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height);
+  color: var(--color-text);
+  background-color: var(--color-bg);
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Reducir movimiento si el usuario lo prefiere ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Layout Principal ── */
+#app-container {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: var(--space-md);
+  padding-bottom: calc(var(--space-2xl) + env(safe-area-inset-bottom, 0px));
+  min-height: 100vh;
+  min-height: 100dvh;
+  position: relative;
+}
+
+/* ── Sistema de Pantallas ── */
+.screen {
+  display: none;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity var(--transition-normal), transform var(--transition-normal);
+  width: 100%;
+}
+
+.screen.active {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Header / Cabecera ── */
+.app-header {
+  text-align: center;
+  padding: var(--space-lg) 0;
+  width: 100%;
+}
+
+.app-logo {
+  font-size: var(--font-size-3xl);
+  margin-bottom: var(--space-xs);
+  display: block;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-8px); }
+}
+
+.app-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-extra);
+  color: var(--color-primary);
+  line-height: 1.2;
+  margin-bottom: var(--space-xs);
+}
+
+.app-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-semi);
+}
+
+/* ── Botones ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  min-height: var(--btn-min-size);
+  min-width: var(--btn-min-size);
+  padding: var(--space-md) var(--space-lg);
+  font-family: var(--font-family);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
+  text-align: center;
+  text-decoration: none;
+  border: 3px solid transparent;
+  border-radius: var(--btn-radius);
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: all var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn:active {
+  transform: scale(0.96);
+}
+
+.btn:focus-visible {
+  outline: 4px solid var(--color-secondary);
+  outline-offset: 3px;
+}
+
+/* Botón Primario */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  color: #FFFFFF;
+  box-shadow: var(--shadow-md), 0 4px 0 var(--color-primary-dark);
+}
+
+.btn-primary:active {
+  box-shadow: var(--shadow-sm);
+  transform: scale(0.96) translateY(2px);
+}
+
+/* Botón Secundario */
+.btn-secondary {
+  background: var(--color-surface);
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-secondary:active {
+  background: var(--color-primary-light);
+}
+
+/* Botón Acento */
+.btn-accent {
+  background: linear-gradient(135deg, var(--color-accent), #B45309);
+  color: #FFFFFF;
+  box-shadow: var(--shadow-md), 0 4px 0 #92400E;
+}
+
+.btn-accent:active {
+  box-shadow: var(--shadow-sm);
+  transform: scale(0.96) translateY(2px);
+}
+
+/* Botón de Éxito */
+.btn-success {
+  background: linear-gradient(135deg, var(--color-success), #15803D);
+  color: #FFFFFF;
+  box-shadow: var(--shadow-md), 0 4px 0 #166534;
+}
+
+/* Botón Grande (para menú principal) */
+.btn-large {
+  width: 100%;
+  min-height: 90px;
+  font-size: var(--font-size-xl);
+  border-radius: var(--card-radius);
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.btn-large .btn-icon {
+  font-size: var(--font-size-2xl);
+}
+
+.btn-large .btn-desc {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  opacity: 0.9;
+}
+
+/* Botón de Volver */
+.btn-back {
+  align-self: flex-start;
+  background: var(--color-surface-alt);
+  color: var(--color-text);
+  min-width: auto;
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-base);
+  margin-bottom: var(--space-md);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-back:active {
+  background: var(--color-border);
+}
+
+/* Botón Deshabilitado */
+.btn:disabled,
+.btn.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* ── Tarjetas / Cards ── */
+.card {
+  background: var(--color-surface);
+  border-radius: var(--card-radius);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-md);
+  width: 100%;
+  border: 2px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.card-highlight {
+  border-color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+/* ── Cuadrícula de Juego ── */
+.game-grid {
+  display: grid;
+  gap: var(--space-sm);
+  width: 100%;
+  margin: var(--space-md) 0;
+}
+
+.game-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.game-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+.game-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+/* Celda / Item de la cuadrícula */
+.grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  background: var(--color-surface);
+  border: 3px solid var(--color-border);
+  border-radius: var(--btn-radius);
+  padding: var(--space-sm);
+  min-height: 90px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.grid-item:active {
+  transform: scale(0.95);
+}
+
+.grid-item:focus-visible {
+  outline: 4px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+.grid-item .item-emoji {
+  font-size: var(--font-size-2xl);
+  line-height: 1;
+}
+
+.grid-item .item-label {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semi);
+  text-align: center;
+  color: var(--color-text);
+  word-break: break-word;
+}
+
+.grid-item .item-number {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-extra);
+  color: var(--color-primary);
+}
+
+/* Estados de los items */
+.grid-item.selected {
+  border-color: var(--color-selected);
+  background: var(--color-selected-bg);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+.grid-item.correct {
+  border-color: var(--color-success);
+  background: var(--color-correct-highlight);
+  animation: pulse-success 0.5s ease;
+}
+
+.grid-item.incorrect {
+  border-color: var(--color-gentle-error);
+  background: var(--color-wrong-highlight);
+  animation: shake-gentle 0.4s ease;
+}
+
+.grid-item.missed {
+  border-color: var(--color-accent);
+  background: var(--color-accent-light);
+}
+
+.grid-item.hidden-content .item-emoji {
+  visibility: hidden;
+}
+
+.grid-item.revealed .item-emoji {
+  visibility: visible;
+  animation: pop-in 0.3s ease;
+}
+
+.grid-item.disabled {
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Carta (para Las Parejas) */
+.card-flip {
+  perspective: 600px;
+  min-height: 100px;
+}
+
+.card-flip-inner {
+  width: 100%;
+  height: 100%;
+  min-height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.5s ease;
+  transform-style: preserve-3d;
+  position: relative;
+}
+
+.card-flip.flipped .card-flip-inner {
+  transform: rotateY(180deg);
+}
+
+.card-face {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+  border-radius: var(--btn-radius);
+  border: 3px solid var(--color-border);
+  padding: var(--space-sm);
+}
+
+.card-front {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  color: white;
+  font-size: var(--font-size-2xl);
+}
+
+.card-back {
+  background: var(--color-surface);
+  transform: rotateY(180deg);
+}
+
+/* ── Temporizador ── */
+.timer-container {
+  width: 100%;
+  text-align: center;
+  margin: var(--space-md) 0;
+}
+
+.timer-display {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  background: var(--color-surface);
+  border-radius: 50px;
+  padding: var(--space-sm) var(--space-lg);
+  box-shadow: var(--shadow-sm);
+  border: 2px solid var(--color-border);
+}
+
+.timer-icon {
+  font-size: var(--font-size-lg);
+}
+
+.timer-text {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-extra);
+  color: var(--color-primary);
+  font-variant-numeric: tabular-nums;
+  min-width: 60px;
+}
+
+.timer-text.warning {
+  color: var(--color-gentle-error);
+  animation: pulse-timer 1s ease infinite;
+}
+
+@keyframes pulse-timer {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.1); }
+}
+
+/* Barra de progreso del temporizador */
+.timer-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--color-surface-alt);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: var(--space-sm);
+}
+
+.timer-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--color-primary), var(--color-success));
+  border-radius: 4px;
+  transition: width 1s linear;
+}
+
+.timer-bar-fill.warning {
+  background: linear-gradient(90deg, var(--color-gentle-error), var(--color-accent));
+}
+
+/* ── Mensajes de Retroalimentación ── */
+.feedback-card {
+  width: 100%;
+  border-radius: var(--card-radius);
+  padding: var(--space-lg);
+  text-align: center;
+  margin: var(--space-md) 0;
+  animation: slide-up 0.4s ease;
+}
+
+.feedback-success {
+  background: var(--color-success-bg);
+  border: 3px solid var(--color-success);
+}
+
+.feedback-encourage {
+  background: var(--color-gentle-error-bg);
+  border: 3px solid var(--color-gentle-error);
+}
+
+.feedback-icon {
+  font-size: 56px;
+  margin-bottom: var(--space-sm);
+  display: block;
+}
+
+.feedback-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-extra);
+  margin-bottom: var(--space-xs);
+}
+
+.feedback-success .feedback-title { color: var(--color-success); }
+.feedback-encourage .feedback-title { color: var(--color-accent); }
+
+.feedback-message {
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-md);
+  line-height: 1.4;
+}
+
+/* Sección de respuestas correctas */
+.correct-answers-section {
+  width: 100%;
+  margin-top: var(--space-md);
+}
+
+.correct-answers-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-sm);
+}
+
+.correct-answers-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  justify-content: center;
+}
+
+.correct-answer-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: var(--color-correct-highlight);
+  border: 2px solid var(--color-success);
+  border-radius: 50px;
+  padding: var(--space-xs) var(--space-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semi);
+}
+
+/* ── Lista de Compras (Modo Historia) ── */
+.shopping-list {
+  width: 100%;
+  list-style: none;
+}
+
+.shopping-list li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--space-sm);
+  box-shadow: var(--shadow-sm);
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semi);
+  animation: slide-in-left 0.4s ease both;
+  border-left: 5px solid var(--color-primary);
+}
+
+.shopping-list li:nth-child(1) { animation-delay: 0.1s; }
+.shopping-list li:nth-child(2) { animation-delay: 0.2s; }
+.shopping-list li:nth-child(3) { animation-delay: 0.3s; }
+.shopping-list li:nth-child(4) { animation-delay: 0.4s; }
+.shopping-list li:nth-child(5) { animation-delay: 0.5s; }
+
+.shopping-list .list-emoji {
+  font-size: var(--font-size-2xl);
+  flex-shrink: 0;
+}
+
+/* ── Cuenta Regresiva Grande ── */
+.countdown-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  text-align: center;
+}
+
+.countdown-number {
+  font-size: 96px;
+  font-weight: var(--font-weight-extra);
+  color: var(--color-primary);
+  line-height: 1;
+  animation: countdown-pop 1s ease infinite;
+}
+
+@keyframes countdown-pop {
+  0%   { transform: scale(1); opacity: 1; }
+  50%  { transform: scale(1.1); opacity: 0.7; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.countdown-label {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-muted);
+  margin-top: var(--space-md);
+  font-weight: var(--font-weight-semi);
+}
+
+/* ── Progreso de Niveles (Entrenador) ── */
+.level-card {
+  width: 100%;
+  background: var(--color-surface);
+  border-radius: var(--card-radius);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-md);
+  box-shadow: var(--shadow-md);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  cursor: pointer;
+  user-select: none;
+  touch-action: manipulation;
+  transition: all var(--transition-fast);
+  border: 3px solid transparent;
+  min-height: 90px;
+}
+
+.level-card:active {
+  transform: scale(0.97);
+  box-shadow: var(--shadow-sm);
+}
+
+.level-card:focus-visible {
+  outline: 4px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+.level-card .level-icon {
+  font-size: var(--font-size-2xl);
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-primary-light);
+  border-radius: var(--border-radius);
+}
+
+.level-card .level-info {
+  flex: 1;
+}
+
+.level-card .level-name {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+
+.level-card .level-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.level-card .level-arrow {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.level-card.completed {
+  border-color: var(--color-success);
+}
+
+.level-card.completed .level-icon {
+  background: var(--color-success-bg);
+}
+
+/* ── Pregunta del Juego ── */
+.game-question {
+  width: 100%;
+  text-align: center;
+  padding: var(--space-md);
+  background: var(--color-surface);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-sm);
+  margin: var(--space-md) 0;
+  border-left: 5px solid var(--color-secondary);
+}
+
+.game-question-text {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  line-height: 1.3;
+}
+
+.game-question-emoji {
+  font-size: var(--font-size-3xl);
+  display: block;
+  margin-bottom: var(--space-xs);
+}
+
+/* ── Secuencia (El Cine) ── */
+.cinema-display {
+  width: 100%;
+  min-height: 250px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface);
+  border-radius: var(--card-radius);
+  box-shadow: var(--shadow-md);
+  margin: var(--space-md) 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.cinema-item {
+  text-align: center;
+  animation: cinema-fade 1.5s ease;
+}
+
+.cinema-item .item-emoji {
+  font-size: 80px;
+  display: block;
+  margin-bottom: var(--space-sm);
+}
+
+.cinema-item .item-label {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+@keyframes cinema-fade {
+  0%   { opacity: 0; transform: scale(0.8); }
+  15%  { opacity: 1; transform: scale(1); }
+  85%  { opacity: 1; transform: scale(1); }
+  100% { opacity: 0; transform: scale(0.8); }
+}
+
+/* Botones SÍ / NO */
+.btn-group-yesno {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  width: 100%;
+  margin: var(--space-md) 0;
+}
+
+.btn-yes {
+  background: linear-gradient(135deg, var(--color-success), #15803D);
+  color: white;
+  font-size: var(--font-size-xl);
+}
+
+.btn-no {
+  background: linear-gradient(135deg, var(--color-secondary), #1E4E8C);
+  color: white;
+  font-size: var(--font-size-xl);
+}
+
+/* ── Instrucciones de Juego ── */
+.game-instructions {
+  width: 100%;
+  text-align: center;
+  padding: var(--space-md);
+  margin: var(--space-sm) 0;
+}
+
+.game-instructions-text {
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+  font-weight: var(--font-weight-semi);
+  line-height: 1.4;
+}
+
+.game-instructions-text .highlight {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-bold);
+}
+
+/* ── Sección de Título de Pantalla ── */
+.screen-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-extra);
+  color: var(--color-primary);
+  text-align: center;
+  margin-bottom: var(--space-sm);
+}
+
+.screen-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+  text-align: center;
+  margin-bottom: var(--space-md);
+}
+
+/* ── Animaciones ── */
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slide-in-left {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes pop-in {
+  0%   { transform: scale(0); }
+  70%  { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+@keyframes pulse-success {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+@keyframes shake-gentle {
+  0%, 100% { transform: translateX(0); }
+  25%      { transform: translateX(-6px); }
+  75%      { transform: translateX(6px); }
+}
+
+@keyframes confetti {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(-120px) rotate(720deg); opacity: 0; }
+}
+
+.confetti-piece {
+  position: fixed;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  animation: confetti-fall 1.5s ease forwards;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+@keyframes confetti-fall {
+  0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+  100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+}
+
+/* ── Espaciadores ── */
+.spacer-sm { height: var(--space-sm); }
+.spacer-md { height: var(--space-md); }
+.spacer-lg { height: var(--space-lg); }
+.spacer-xl { height: var(--space-xl); }
+
+/* ── Utilidades ── */
+.text-center { text-align: center; }
+.w-full { width: 100%; }
+.mt-md { margin-top: var(--space-md); }
+.mt-lg { margin-top: var(--space-lg); }
+.mb-md { margin-bottom: var(--space-md); }
+.hidden { display: none !important; }
+
+/* ── Indicador de selección ── */
+.selection-counter {
+  width: 100%;
+  text-align: center;
+  padding: var(--space-sm);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semi);
+  color: var(--color-text-muted);
+  background: var(--color-surface);
+  border-radius: 50px;
+  box-shadow: var(--shadow-sm);
+  margin-bottom: var(--space-sm);
+}
+
+.selection-counter .count {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-extra);
+}
+
+/* ── Flash / Parpadeo (Nivel 2) ── */
+.screen-flash {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  z-index: 999;
+  animation: flash-anim 0.6s ease;
+  pointer-events: none;
+}
+
+@keyframes flash-anim {
+  0%   { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* ── Responsive Fine-tuning ── */
+@media screen and (max-width: 360px) {
+  :root {
+    --font-size-base: 18px;
+    --font-size-lg:   22px;
+    --font-size-xl:   26px;
+    --font-size-2xl:  34px;
+    --font-size-3xl:  42px;
+  }
+  
+  .grid-item {
+    min-height: 80px;
+    padding: var(--space-xs);
+  }
+  
+  .grid-item .item-emoji {
+    font-size: 32px;
+  }
+}
+
+@media screen and (min-width: 481px) {
+  #app-container {
+    padding: var(--space-lg);
+  }
+}
+
+/* ── Scroll suave en iOS ── */
+.scroll-container {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+/* ── Safe area para notch/barra inferior ── */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+  #app-container {
+    padding-bottom: calc(var(--space-2xl) + env(safe-area-inset-bottom));
+  }
+}

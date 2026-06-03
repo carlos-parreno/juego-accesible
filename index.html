@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0, user-scalable=yes">
+  <meta name="description" content="Juego de memoria accesible para adultos mayores. Ejercita tu mente con actividades divertidas y sin presión.">
+  <meta name="theme-color" content="#1B6B4A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>MemorIA — Juego de Memoria Accesible</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div id="app-container" role="main">
+
+    <!-- ════════════════════════════════════════════
+         PANTALLA: Menú Principal
+         ════════════════════════════════════════════ -->
+    <section id="screen-menu" class="screen active" aria-label="Menú Principal">
+      <header class="app-header">
+        <span class="app-logo" aria-hidden="true">🧠</span>
+        <h1 class="app-title">MemorIA</h1>
+        <p class="app-subtitle">Ejercita tu mente, ¡diviértete!</p>
+      </header>
+
+      <div class="spacer-md"></div>
+
+      <button id="btn-modo-historia" class="btn btn-primary btn-large" aria-label="Jugar Modo Historia: La lista del supermercado">
+        <span class="btn-icon" aria-hidden="true">🛒</span>
+        <span>La Lista del Super</span>
+        <span class="btn-desc">Recuerda los productos de la lista</span>
+      </button>
+
+      <div class="spacer-md"></div>
+
+      <button id="btn-modo-entrenador" class="btn btn-accent btn-large" aria-label="Jugar Modo Entrenador Mental: 4 minijuegos">
+        <span class="btn-icon" aria-hidden="true">🏋️</span>
+        <span>Entrenador Mental</span>
+        <span class="btn-desc">4 minijuegos para tu cerebro</span>
+      </button>
+
+      <div class="spacer-xl"></div>
+
+      <p class="text-center" style="font-size: var(--font-size-sm); color: var(--color-text-muted);">
+        Sin prisas, sin presión. ¡A tu ritmo! 🌟
+      </p>
+    </section>
+
+
+    <!-- ════════════════════════════════════════════
+         MODO HISTORIA — Fase 1: Presentación de la lista
+         ════════════════════════════════════════════ -->
+    <section id="screen-historia-presentacion" class="screen" aria-label="Lista de compras a memorizar">
+      <button class="btn btn-back" id="btn-back-historia-1" aria-label="Volver al menú">← Menú</button>
+      
+      <h2 class="screen-title">🛒 Tu Lista de Compras</h2>
+      <p class="screen-subtitle">Memoriza estos productos. ¡Tómate tu tiempo!</p>
+
+      <div class="timer-container" aria-live="polite">
+        <div class="timer-display">
+          <span class="timer-icon" aria-hidden="true">⏱️</span>
+          <span id="timer-historia-presentacion" class="timer-text">20</span>
+          <span>seg</span>
+        </div>
+        <div class="timer-bar">
+          <div id="timer-bar-historia" class="timer-bar-fill" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <ul id="shopping-list-display" class="shopping-list" aria-label="Lista de productos a memorizar">
+        <!-- Se llena dinámicamente con JS -->
+      </ul>
+
+      <div class="spacer-md"></div>
+
+      <button id="btn-historia-listo" class="btn btn-primary w-full" aria-label="Ya memoricé la lista, continuar">
+        ¡Ya la tengo! ✅
+      </button>
+    </section>
+
+
+    <!-- ════════════════════════════════════════════
+         MODO HISTORIA — Fase 2: Cuenta regresiva (espera)
+         ════════════════════════════════════════════ -->
+    <section id="screen-historia-espera" class="screen" aria-label="Cuenta regresiva antes de responder">
+      <div class="countdown-display">
+        <p class="countdown-label">Prepárate para recordar...</p>
+        <div class="spacer-md"></div>
+        <span id="countdown-number" class="countdown-number" aria-live="assertive">15</span>
+        <div class="spacer-md"></div>
+        <p class="countdown-label">La lista aparecerá como productos del super</p>
+      </div>
+    </section>
+
+
+    <!-- ════════════════════════════════════════════
+         MODO HISTORIA — Fase 3: Selección de elementos
+         ════════════════════════════════════════════ -->
+    <section id="screen-historia-seleccion" class="screen" aria-label="Selecciona los productos que recuerdas">
+      <button class="btn btn-back" id="btn-back-historia-3" aria-label="Volver al menú">← Menú</button>
+
+      <h2 class="screen-title">🔍 ¿Qué había en tu lista?</h2>
+      <p class="screen-subtitle">Toca los productos que recuerdes</p>
+
+      <div id="selection-counter" class="selection-counter" aria-live="polite">
+        Seleccionados: <span class="count" id="count-selected">0</span> de <span id="count-total">5</span>
+      </div>
+
+      <div id="historia-grid" class="game-grid cols-3" role="grid" aria-label="Productos para seleccionar">
+        <!-- Se llena dinámicamente con JS -->
+      </div>
+
+      <div class="spacer-sm"></div>
+
+      <button id="btn-historia-comprobar" class="btn btn-success w-full" aria-label="Comprobar mis respuestas">
+        Comprobar ✔️
+      </button>
+    </section>
+
+
+    <!-- ════════════════════════════════════════════
+         MODO HISTORIA — Fase 4: Resultado
+         ════════════════════════════════════════════ -->
+    <section id="screen-historia-resultado" class="screen" aria-label="Resultado de tu memoria">
+      <div id="historia-feedback" class="feedback-card" aria-live="polite">
+        <!-- Se llena dinámicamente -->
+      </div>
+
+      <div id="historia-detalle" class="correct-answers-section">
+        <!-- Se llena dinámicamente -->
+      </div>
+
+      <div class="spacer-lg"></div>
+
+      <button id="btn-historia-reintentar" class="btn btn-primary w-full">
+        🔄 Intentar de Nuevo
+      </button>
+
+      <div class="spacer-sm"></div>
+
+      <button id="btn-historia-menu" class="btn btn-secondary w-full">
+        🏠 Volver al Menú
+      </button>
+    </section>
+
+
+    <!-- ════════════════════════════════════════════
+         MODO ENTRENADOR — Menú de Niveles
+         ════════════════════════════════════════════ -->
+    <section id="screen-entrenador-menu" class="screen" aria-label="Menú del Entrenador Mental">
+      <button class="btn btn-back" id="btn-back-entrenador" aria-label="Volver al menú principal">← Menú</button>
+
+      <h2 class="screen-title">🏋️ Entrenador Mental</h2>
+      <p class="screen-subtitle">Elige un minijuego para ejercitar tu mente</p>
+
+      <div class="spacer-sm"></div>
+
+      <button class="level-card" id="btn-nivel-1" role="button" aria-label="Nivel 1: El Escondite. Recuerda dónde se escondió cada imagen.">
+        <div class="level-icon" aria-hidden="true">📦</div>
+        <div class="level-info">
+          <div class="level-name">Nivel 1: El Escondite</div>
+          <div class="level-desc">¿Dónde se escondió cada imagen?</div>
+        </div>
+        <span class="level-arrow" aria-hidden="true">›</span>
+      </button>
+
+      <button class="level-card" id="btn-nivel-2" role="button" aria-label="Nivel 2: El Intruso. Encuentra al que no estaba antes.">
+        <div class="level-icon" aria-hidden="true">🔎</div>
+        <div class="level-info">
+          <div class="level-name">Nivel 2: El Intruso</div>
+          <div class="level-desc">¿Quién se coló en el grupo?</div>
+        </div>
+        <span class="level-arrow" aria-hidden="true">›</span>
+      </button>
+
+      <button class="level-card" id="btn-nivel-3" role="button" aria-label="Nivel 3: El Cine. ¿Recuerdas qué apareció en la secuencia?">
+        <div class="level-icon" aria-hidden="true">🎬</div>
+        <div class="level-info">
+          <div class="level-name">Nivel 3: El Cine</div>
+          <div class="level-desc">¿Qué apareció en la película?</div>
+        </div>
+        <span class="level-arrow" aria-hidden="true">›</span>
+      </button>
+
+      <button class="level-card" id="btn-nivel-4" role="button" aria-label="Nivel 4: Las Parejas Dirigidas. Encuentra las cartas que te piden.">
+        <div class="level-icon" aria-hidden="true">🃏</div>
+        <div class="level-info">
+          <div class="level-name">Nivel 4: Las Parejas</div>
+          <div class="level-desc">Encuentra las cartas que te piden</div>
+        </div>
+        <span class="level-arrow" aria-hidden="true">›</span>
+      </button>
+    </section>
+
+
+    <!-- ════════════════════════════════════════════
+         PANTALLA GENÉRICA DE JUEGO (Entrenador)
+         Se reutiliza para todos los niveles
+         ════════════════════════════════════════════ -->
+    <section id="screen-juego" class="screen" aria-label="Pantalla de juego">
+      <button class="btn btn-back" id="btn-back-juego" aria-label="Volver a la selección de niveles">← Niveles</button>
+
+      <h2 id="juego-titulo" class="screen-title"></h2>
+
+      <!-- Instrucciones (se muestran brevemente) -->
+      <div id="juego-instrucciones" class="game-instructions">
+        <p id="juego-instrucciones-text" class="game-instructions-text"></p>
+      </div>
+
+      <!-- Temporizador (solo visible en fase de memorización) -->
+      <div id="juego-timer-container" class="timer-container hidden" aria-live="polite">
+        <div class="timer-display">
+          <span class="timer-icon" aria-hidden="true">⏱️</span>
+          <span id="juego-timer-text" class="timer-text">5</span>
+          <span>seg</span>
+        </div>
+        <div class="timer-bar">
+          <div id="juego-timer-bar" class="timer-bar-fill" style="width: 100%;"></div>
+        </div>
+      </div>
+
+      <!-- Área de contenido del juego (se llena dinámicamente) -->
+      <div id="juego-area" class="w-full" role="region" aria-label="Área de juego">
+        <!-- Contenido dinámico -->
+      </div>
+
+      <!-- Pregunta del juego -->
+      <div id="juego-pregunta" class="game-question hidden">
+        <span id="juego-pregunta-emoji" class="game-question-emoji" aria-hidden="true"></span>
+        <p id="juego-pregunta-text" class="game-question-text"></p>
+      </div>
+
+      <!-- Área de opciones de respuesta -->
+      <div id="juego-opciones" class="w-full" role="region" aria-label="Opciones de respuesta">
+        <!-- Contenido dinámico -->
+      </div>
+
+      <!-- Botón de acción principal del juego -->
+      <div class="spacer-sm"></div>
+      <button id="juego-btn-accion" class="btn btn-primary w-full hidden">
+        Continuar
+      </button>
+    </section>
+
+
+    <!-- ════════════════════════════════════════════
+         PANTALLA DE RESULTADO (Entrenador)
+         ════════════════════════════════════════════ -->
+    <section id="screen-juego-resultado" class="screen" aria-label="Resultado del juego">
+      <div id="juego-feedback" class="feedback-card" aria-live="polite">
+        <!-- Se llena dinámicamente -->
+      </div>
+
+      <div id="juego-detalle" class="correct-answers-section">
+        <!-- Se llena dinámicamente -->
+      </div>
+
+      <div class="spacer-lg"></div>
+
+      <button id="btn-juego-reintentar" class="btn btn-primary w-full">
+        🔄 Intentar de Nuevo
+      </button>
+
+      <div class="spacer-sm"></div>
+
+      <button id="btn-juego-siguiente" class="btn btn-accent w-full hidden">
+        ➡️ Siguiente Nivel
+      </button>
+
+      <div class="spacer-sm"></div>
+
+      <button id="btn-juego-niveles" class="btn btn-secondary w-full">
+        📋 Volver a Niveles
+      </button>
+    </section>
+
+  </div><!-- /#app-container -->
+
+  <script src="app.js"></script>
+</body>
+</html>
