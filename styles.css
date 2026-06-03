@@ -991,3 +991,40 @@ body {
     padding-bottom: calc(var(--space-2xl) + env(safe-area-inset-bottom));
   }
 }
+
+/* ── Historia y TTS ── */
+.story-container {
+  background: var(--color-surface);
+  border-radius: var(--card-radius);
+  padding: var(--space-lg);
+  box-shadow: var(--shadow-sm);
+  margin: var(--space-md) 0;
+  border-left: 5px solid var(--color-primary);
+}
+
+.story-text {
+  font-size: var(--font-size-lg);
+  line-height: 1.6;
+  color: var(--color-text);
+}
+
+.audio-controls {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-md);
+  margin: var(--space-md) 0;
+}
+
+.btn-icon-only {
+  border-radius: 50%;
+  width: var(--btn-min-size);
+  height: var(--btn-min-size);
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-tts {
+  font-size: var(--font-size-xl);
+}
