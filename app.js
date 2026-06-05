@@ -346,14 +346,10 @@ const ModoHistoria = {
     baseItems.forEach(item => {
       let displayName = item.baseName;
       let selectedVal = "";
-      if (nivel === 'medio') {
+      if (nivel === 'medio' || nivel === 'dificil') {
         const amt = item.units[Math.floor(Math.random() * item.units.length)];
         displayName = `${amt} ${item.baseName}`;
         selectedVal = amt;
-      } else if (nivel === 'dificil') {
-        const measure = item.measures[Math.floor(Math.random() * item.measures.length)];
-        displayName = `${measure} ${item.baseName}`;
-        selectedVal = measure;
       }
       this.currentList.push({ 
         name: displayName, 
@@ -464,13 +460,10 @@ const ModoHistoria = {
   },
 
   getOptions(item) {
-    if (this.level === 'medio') {
+    if (this.level === 'medio' || this.level === 'dificil') {
       const units = item.units || ['1', '2', '3', '4', '5'];
       const sorted = [...units].map(Number).sort((a, b) => a - b).map(String);
       return ['0', ...sorted];
-    } else if (this.level === 'dificil') {
-      const measures = item.measures || ['1 paquete de', '2 libras de'];
-      return ['', ...measures];
     }
     return [];
   },
@@ -479,7 +472,7 @@ const ModoHistoria = {
     if (this.level === 'facil') {
       return Object.values(this.selectedStates).filter(Boolean).length;
     } else {
-      return Object.values(this.selectedStates).filter(val => val !== '0' && val !== '').length;
+      return Object.values(this.selectedStates).filter(val => val !== '0').length;
     }
   },
 
@@ -496,7 +489,7 @@ const ModoHistoria = {
         btn.addEventListener('click', () => this.toggleFacilItem(item, btn));
       } else {
         btn.className = 'grid-item quantity-card';
-        const defaultValue = this.level === 'medio' ? '0' : '';
+        const defaultValue = '0';
         this.selectedStates[item.baseName] = defaultValue;
 
         btn.innerHTML = `
@@ -504,7 +497,7 @@ const ModoHistoria = {
           <span class="item-label">${item.baseName}</span>
           <div class="quantity-controls">
             <button class="qty-btn qty-minus" aria-label="Disminuir ${item.baseName}">-</button>
-            <span class="qty-value ${this.level === 'dificil' ? 'value-measure' : ''}">${this.level === 'medio' ? '0' : 'Ninguno'}</span>
+            <span class="qty-value">0</span>
             <button class="qty-btn qty-plus" aria-label="Aumentar ${item.baseName}">+</button>
           </div>
         `;
@@ -563,14 +556,14 @@ const ModoHistoria = {
     if (newIndex < 0 || newIndex >= options.length) return; // out of bounds
 
     const newValue = options[newIndex];
-    const isNowSelected = newValue !== '0' && newValue !== '';
-    const wasSelected = currentValue !== '0' && currentValue !== '';
+    const isNowSelected = newValue !== '0';
+    const wasSelected = currentValue !== '0';
 
     if (isNowSelected && !wasSelected) {
       const currentSelectedCount = this.getSelectedCount();
       if (currentSelectedCount >= this.currentList.length) {
         const oldestName = this.selectedOrder.shift();
-        this.selectedStates[oldestName] = this.level === 'medio' ? '0' : '';
+        this.selectedStates[oldestName] = '0';
 
         const gridItems = document.querySelectorAll('#historia-grid .grid-item');
         gridItems.forEach(el => {
@@ -579,7 +572,7 @@ const ModoHistoria = {
             el.classList.remove('selected');
             const valSpan = el.querySelector('.qty-value');
             if (valSpan) {
-              valSpan.textContent = this.level === 'medio' ? '0' : 'Ninguno';
+              valSpan.textContent = '0';
             }
           }
         });
@@ -595,15 +588,7 @@ const ModoHistoria = {
       this.selectedStates[item.baseName] = newValue;
     }
 
-    if (this.level === 'medio') {
-      valueSpan.textContent = newValue;
-    } else {
-      if (newValue === '') {
-        valueSpan.textContent = 'Ninguno';
-      } else {
-        valueSpan.textContent = newValue.replace(/\s+de\s*$/, '');
-      }
-    }
+    valueSpan.textContent = newValue;
 
     document.getElementById('count-selected').textContent = this.getSelectedCount();
   },
@@ -615,7 +600,7 @@ const ModoHistoria = {
 
     this.currentList.forEach(correctItem => {
       const userVal = this.selectedStates[correctItem.baseItem.baseName];
-      const isSelected = this.level === 'facil' ? (userVal === true) : (userVal !== '0' && userVal !== '');
+      const isSelected = this.level === 'facil' ? (userVal === true) : (userVal !== '0');
 
       if (!isSelected) {
         misses.push(correctItem);
@@ -635,7 +620,7 @@ const ModoHistoria = {
     const correctBaseNames = this.currentList.map(i => i.baseItem.baseName);
     Object.keys(this.selectedStates).forEach(baseName => {
       const userVal = this.selectedStates[baseName];
-      const isSelected = this.level === 'facil' ? (userVal === true) : (userVal !== '0' && userVal !== '');
+      const isSelected = this.level === 'facil' ? (userVal === true) : (userVal !== '0');
       if (isSelected && !correctBaseNames.includes(baseName)) {
         const gridItem = this.allGridItems.find(i => i.baseName === baseName);
         extras.push(gridItem);
@@ -660,7 +645,7 @@ const ModoHistoria = {
 
       const correctItem = this.currentList.find(i => i.baseItem.baseName === gridItem.baseName);
       const userVal = this.selectedStates[gridItem.baseName];
-      const isSelected = this.level === 'facil' ? (userVal === true) : (userVal !== '0' && userVal !== '');
+      const isSelected = this.level === 'facil' ? (userVal === true) : (userVal !== '0');
 
       if (correctItem) {
         if (isSelected) {
