@@ -329,7 +329,8 @@ const LEVEL_CONFIG = {
 
 const ModoHistoria = {
   currentList: [],
-  selectedItems: [],
+  selectedStates: {},
+  selectedOrder: [],
   allGridItems: [],
   timer: null,
   level: 'facil',
@@ -399,7 +400,8 @@ const ModoHistoria = {
 
   startMemorization() {
     TTSManager.stop();
-    this.selectedItems = [];
+    this.selectedStates = {};
+    this.selectedOrder = [];
     this.renderList();
     ScreenManager.show('screen-historia-presentacion');
 
@@ -441,105 +443,208 @@ const ModoHistoria = {
   },
 
   goToSelection() {
-    this.selectedItems = [];
+    this.selectedStates = {};
+    this.selectedOrder = [];
     
-    const wrongQuantityItems = [];
-    if (this.level === 'medio' || this.level === 'dificil') {
-      this.currentList.forEach(item => {
-        let wrongName = "";
-        if (this.level === 'medio') {
-          const correctAmt = item.selectedValue;
-          const otherAmts = item.baseItem.units.filter(u => u !== correctAmt);
-          const wrongAmt = otherAmts.length > 0 ? otherAmts[Math.floor(Math.random() * otherAmts.length)] : (parseInt(correctAmt) + 2).toString();
-          wrongName = `${wrongAmt} ${item.baseItem.baseName}`;
-        } else if (this.level === 'dificil') {
-          const correctMeasure = item.selectedValue;
-          const otherMeasures = item.baseItem.measures.filter(m => m !== correctMeasure);
-          const wrongMeasure = otherMeasures.length > 0 ? otherMeasures[Math.floor(Math.random() * otherMeasures.length)] : `2 libras de ${item.baseItem.baseName}`;
-          wrongName = `${wrongMeasure} ${item.baseItem.baseName}`;
-        }
-        wrongQuantityItems.push({ name: wrongName, emoji: item.emoji });
-      });
-    }
-
-    // Determine how many other product distractors we need to reach 12 items in the grid
-    const currentTotal = this.currentList.length + wrongQuantityItems.length;
-    const neededDistractors = 12 - currentTotal;
-
     // Pick distractors from other products (products not in this.currentList)
     const usedBaseNames = this.currentList.map(i => i.baseItem.baseName);
     const availableDistractors = SHOPPING_DATA.distractors.concat(
       SHOPPING_DATA.items.filter(i => !usedBaseNames.includes(i.baseName))
     );
 
+    const neededDistractors = 12 - this.currentList.length;
     const distBase = pickRandom(availableDistractors, neededDistractors);
-    const distractors = distBase.map(item => {
-      let dName = item.baseName;
-      if (this.level === 'medio') {
-        const units = item.units || ['1', '2', '3'];
-        const amt = units[Math.floor(Math.random() * units.length)];
-        dName = `${amt} ${item.baseName}`;
-      } else if (this.level === 'dificil') {
-        const measures = item.measures || ['1 paquete de', '2 libras de'];
-        const measure = measures[Math.floor(Math.random() * measures.length)];
-        dName = `${measure} ${item.baseName}`;
-      }
-      return { name: dName, emoji: item.emoji };
-    });
+    const correctBaseItems = this.currentList.map(i => i.baseItem);
 
-    this.allGridItems = shuffle([...this.currentList, ...wrongQuantityItems, ...distractors]);
+    this.allGridItems = shuffle([...correctBaseItems, ...distBase]);
     this.renderGrid();
     ScreenManager.show('screen-historia-seleccion');
     document.getElementById('count-total').textContent = this.currentList.length;
     document.getElementById('count-selected').textContent = '0';
   },
 
+  getOptions(item) {
+    if (this.level === 'medio') {
+      const units = item.units || ['1', '2', '3', '4', '5'];
+      const sorted = [...units].map(Number).sort((a, b) => a - b).map(String);
+      return ['0', ...sorted];
+    } else if (this.level === 'dificil') {
+      const measures = item.measures || ['1 paquete de', '2 libras de'];
+      return ['', ...measures];
+    }
+    return [];
+  },
+
+  getSelectedCount() {
+    if (this.level === 'facil') {
+      return Object.values(this.selectedStates).filter(Boolean).length;
+    } else {
+      return Object.values(this.selectedStates).filter(val => val !== '0' && val !== '').length;
+    }
+  },
+
   renderGrid() {
     const gridEl = document.getElementById('historia-grid');
     gridEl.innerHTML = '';
-    this.allGridItems.forEach((item, index) => {
-      const btn = document.createElement('button');
-      btn.className = 'grid-item';
+    this.allGridItems.forEach((item) => {
+      const btn = document.createElement('div');
       btn.setAttribute('role', 'gridcell');
-      btn.innerHTML = `<span class="item-emoji" aria-hidden="true">${item.emoji}</span><span class="item-label">${item.name}</span>`;
-      btn.addEventListener('click', () => this.toggleItem(index, btn));
+      
+      if (this.level === 'facil') {
+        btn.className = 'grid-item clickable-card';
+        btn.innerHTML = `<span class="item-emoji" aria-hidden="true">${item.emoji}</span><span class="item-label">${item.baseName}</span>`;
+        btn.addEventListener('click', () => this.toggleFacilItem(item, btn));
+      } else {
+        btn.className = 'grid-item quantity-card';
+        const defaultValue = this.level === 'medio' ? '0' : '';
+        this.selectedStates[item.baseName] = defaultValue;
+
+        btn.innerHTML = `
+          <span class="item-emoji" aria-hidden="true">${item.emoji}</span>
+          <span class="item-label">${item.baseName}</span>
+          <div class="quantity-controls">
+            <button class="qty-btn qty-minus" aria-label="Disminuir ${item.baseName}">-</button>
+            <span class="qty-value ${this.level === 'dificil' ? 'value-measure' : ''}">${this.level === 'medio' ? '0' : 'Ninguno'}</span>
+            <button class="qty-btn qty-plus" aria-label="Aumentar ${item.baseName}">+</button>
+          </div>
+        `;
+
+        const minusBtn = btn.querySelector('.qty-minus');
+        const plusBtn = btn.querySelector('.qty-plus');
+        const valueSpan = btn.querySelector('.qty-value');
+
+        minusBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.changeQuantity(item, -1, valueSpan, btn);
+        });
+
+        plusBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          this.changeQuantity(item, 1, valueSpan, btn);
+        });
+      }
       gridEl.appendChild(btn);
     });
   },
 
-  toggleItem(index, btn) {
-    const itemName = this.allGridItems[index].name;
-    const isSelected = this.selectedItems.includes(itemName);
+  toggleFacilItem(item, btn) {
+    const isSelected = !this.selectedStates[item.baseName];
     if (isSelected) {
-      this.selectedItems = this.selectedItems.filter(n => n !== itemName);
-      btn.classList.remove('selected');
-    } else {
-      if (this.selectedItems.length >= this.currentList.length) {
-        const firstItemName = this.selectedItems.shift();
-        const gridButtons = document.querySelectorAll('#historia-grid .grid-item');
-        gridButtons.forEach(buttonEl => {
-          const labelEl = buttonEl.querySelector('.item-label');
-          if (labelEl && labelEl.textContent === firstItemName) {
-            buttonEl.classList.remove('selected');
+      if (this.getSelectedCount() >= this.currentList.length) {
+        const oldestName = this.selectedOrder.shift();
+        this.selectedStates[oldestName] = false;
+        
+        const gridItems = document.querySelectorAll('#historia-grid .grid-item');
+        gridItems.forEach(el => {
+          const labelEl = el.querySelector('.item-label');
+          if (labelEl && labelEl.textContent === oldestName) {
+            el.classList.remove('selected');
           }
         });
       }
-      this.selectedItems.push(itemName);
+      this.selectedStates[item.baseName] = true;
+      this.selectedOrder.push(item.baseName);
       btn.classList.add('selected');
+    } else {
+      this.selectedStates[item.baseName] = false;
+      this.selectedOrder = this.selectedOrder.filter(name => name !== item.baseName);
+      btn.classList.remove('selected');
     }
-    document.getElementById('count-selected').textContent = this.selectedItems.length;
+    document.getElementById('count-selected').textContent = this.getSelectedCount();
+  },
+
+  changeQuantity(item, direction, valueSpan, cardEl) {
+    const options = this.getOptions(item);
+    const currentValue = this.selectedStates[item.baseName];
+    let currentIndex = options.indexOf(currentValue);
+    if (currentIndex === -1) currentIndex = 0;
+
+    let newIndex = currentIndex + direction;
+    if (newIndex < 0 || newIndex >= options.length) return; // out of bounds
+
+    const newValue = options[newIndex];
+    const isNowSelected = newValue !== '0' && newValue !== '';
+    const wasSelected = currentValue !== '0' && currentValue !== '';
+
+    if (isNowSelected && !wasSelected) {
+      const currentSelectedCount = this.getSelectedCount();
+      if (currentSelectedCount >= this.currentList.length) {
+        const oldestName = this.selectedOrder.shift();
+        this.selectedStates[oldestName] = this.level === 'medio' ? '0' : '';
+
+        const gridItems = document.querySelectorAll('#historia-grid .grid-item');
+        gridItems.forEach(el => {
+          const labelEl = el.querySelector('.item-label');
+          if (labelEl && labelEl.textContent === oldestName) {
+            el.classList.remove('selected');
+            const valSpan = el.querySelector('.qty-value');
+            if (valSpan) {
+              valSpan.textContent = this.level === 'medio' ? '0' : 'Ninguno';
+            }
+          }
+        });
+      }
+      this.selectedStates[item.baseName] = newValue;
+      this.selectedOrder.push(item.baseName);
+      cardEl.classList.add('selected');
+    } else if (!isNowSelected && wasSelected) {
+      this.selectedStates[item.baseName] = newValue;
+      this.selectedOrder = this.selectedOrder.filter(name => name !== item.baseName);
+      cardEl.classList.remove('selected');
+    } else {
+      this.selectedStates[item.baseName] = newValue;
+    }
+
+    if (this.level === 'medio') {
+      valueSpan.textContent = newValue;
+    } else {
+      if (newValue === '') {
+        valueSpan.textContent = 'Ninguno';
+      } else {
+        valueSpan.textContent = newValue.replace(/\s+de\s*$/, '');
+      }
+    }
+
+    document.getElementById('count-selected').textContent = this.getSelectedCount();
   },
 
   checkAnswers() {
-    const correctNames = this.currentList.map(i => i.name);
-    const hits = this.selectedItems.filter(n => correctNames.includes(n));
-    const misses = correctNames.filter(n => !this.selectedItems.includes(n));
-    const extras = this.selectedItems.filter(n => !correctNames.includes(n));
-    
-    const isAllCorrect = hits.length === correctNames.length && extras.length === 0;
-    const isPartial = hits.length > 0 && hits.length < correctNames.length;
-    
-    // Play sound
+    let hits = [];
+    let misses = [];
+    let extras = [];
+
+    this.currentList.forEach(correctItem => {
+      const userVal = this.selectedStates[correctItem.baseItem.baseName];
+      const isSelected = this.level === 'facil' ? (userVal === true) : (userVal !== '0' && userVal !== '');
+
+      if (!isSelected) {
+        misses.push(correctItem);
+      } else {
+        if (this.level === 'facil') {
+          hits.push(correctItem);
+        } else {
+          if (userVal === correctItem.selectedValue) {
+            hits.push(correctItem);
+          } else {
+            misses.push(correctItem);
+          }
+        }
+      }
+    });
+
+    const correctBaseNames = this.currentList.map(i => i.baseItem.baseName);
+    Object.keys(this.selectedStates).forEach(baseName => {
+      const userVal = this.selectedStates[baseName];
+      const isSelected = this.level === 'facil' ? (userVal === true) : (userVal !== '0' && userVal !== '');
+      if (isSelected && !correctBaseNames.includes(baseName)) {
+        const gridItem = this.allGridItems.find(i => i.baseName === baseName);
+        extras.push(gridItem);
+      }
+    });
+
+    const isAllCorrect = hits.length === this.currentList.length && extras.length === 0;
+    const isPartial = hits.length > 0 && hits.length < this.currentList.length;
+
     if (isAllCorrect) {
       SoundEngine.playSuccess();
     } else if (isPartial && extras.length === 0) {
@@ -548,13 +653,31 @@ const ModoHistoria = {
       SoundEngine.playError();
     }
 
-    const gridItems = document.querySelectorAll('#historia-grid .grid-item');
-    gridItems.forEach((el, idx) => {
-      const itemName = this.allGridItems[idx].name;
+    const gridElItems = document.querySelectorAll('#historia-grid .grid-item');
+    gridElItems.forEach((el, idx) => {
+      const gridItem = this.allGridItems[idx];
       el.classList.add('disabled');
-      if (correctNames.includes(itemName) && this.selectedItems.includes(itemName)) el.classList.add('correct');
-      else if (correctNames.includes(itemName) && !this.selectedItems.includes(itemName)) el.classList.add('missed');
-      else if (!correctNames.includes(itemName) && this.selectedItems.includes(itemName)) el.classList.add('incorrect');
+
+      const correctItem = this.currentList.find(i => i.baseItem.baseName === gridItem.baseName);
+      const userVal = this.selectedStates[gridItem.baseName];
+      const isSelected = this.level === 'facil' ? (userVal === true) : (userVal !== '0' && userVal !== '');
+
+      if (correctItem) {
+        if (isSelected) {
+          const isCorrect = this.level === 'facil' ? true : (userVal === correctItem.selectedValue);
+          if (isCorrect) {
+            el.classList.add('correct');
+          } else {
+            el.classList.add('incorrect');
+          }
+        } else {
+          el.classList.add('missed');
+        }
+      } else {
+        if (isSelected) {
+          el.classList.add('incorrect');
+        }
+      }
     });
 
     setTimeout(() => this.showResult(isAllCorrect, hits, misses, extras), 800);
@@ -575,7 +698,7 @@ const ModoHistoria = {
 
     let detalleHTML = '<p class="correct-answers-title">📋 La lista correcta era:</p><div class="correct-answers-list">';
     this.currentList.forEach(item => {
-      const wasFound = hits.includes(item.name);
+      const wasFound = hits.some(h => h.name === item.name);
       detalleHTML += `<span class="correct-answer-chip" style="${wasFound ? '' : 'border-color: var(--color-gentle-error); background: var(--color-gentle-error-bg);'}">${item.emoji} ${item.name} ${wasFound ? '✅' : '❌'}</span>`;
     });
     detalleHTML += '</div>';

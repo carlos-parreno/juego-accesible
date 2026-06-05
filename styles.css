@@ -1062,3 +1062,71 @@ body {
   font-weight: var(--font-weight-semi);
   margin-top: 2px;
 }
+
+/* ── Controles de Cantidad en Modo Historia (Supermercado) ── */
+.grid-item.quantity-card {
+  cursor: default;
+  min-height: 140px;
+  justify-content: space-between;
+  padding: var(--space-sm);
+}
+
+.grid-item.clickable-card {
+  cursor: pointer;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: var(--space-xs);
+  background: var(--color-surface-alt);
+  border-radius: var(--border-radius);
+  padding: 4px;
+}
+
+.qty-btn {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  font-size: 20px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.qty-btn:active {
+  transform: scale(0.9);
+}
+
+.qty-btn:focus-visible {
+  outline: 3px solid var(--color-secondary);
+  outline-offset: 1px;
+}
+
+.qty-value {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text);
+  flex: 1;
+  text-align: center;
+  min-width: 30px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  user-select: none;
+}
+
+.qty-value.value-measure {
+  font-size: 14px;
+  white-space: normal;
+  line-height: 1.2;
+}
+
